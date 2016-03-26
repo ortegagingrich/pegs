@@ -193,13 +193,7 @@ class EnglishBoard(object):
 
 
 def __test():
-	test_board = EnglishBoard()
-	test_board.display()
-	if(test_board.try_move(3, 3, i_orig=1, j_orig=3)):
-		print("valid")
-	else:
-		print("invalid")
-	test_board.display()
+	pass
 
 if __name__ == '__main__':
 	__test()

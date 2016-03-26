@@ -8,14 +8,17 @@ from board import EnglishBoard
 
 def run():
 	"""Executes an interactive game"""
+	from undo import UndoRecord
+	
 	board = EnglishBoard()
+	record = UndoRecord(32, board)
 	
 	while(board.move_possible()):
 		print("Pegs Remaining: {}".format(board.score))
 		board.display()
 		try:
 			command = _get_command()
-			_try_command(command, board)
+			_try_command(command, board, record)
 		except Exception as exception:
 			print(exception)
 			_wait_for_input()
@@ -23,6 +26,7 @@ def run():
 	print('Final Score: {}'.format(board.score))
 	board.display()
 	_wait_for_input()
+	record.replay()
 
 
 def _quit():
@@ -41,11 +45,15 @@ def _print_help():
 	print('\t"[old_i] [old_j] to [new_i] [new_j]')
 	print('\t"[peg_number] [up/down/left/right/u/d/l/r]"')
 	print('\t"[old_i] [old_j] [up/down/left/right/u/d/l/r]"')
+	print('"undo" to undo.')
+	print('"redo" to redo.')
+	print('"replay" to replay all moves in undo history.')
+	print('"cheat" to win.')
 	print('"help" for help.')
 	print('"quit" to quit the game.')
 	_wait_for_input()
 
-def _try_command(command, board):
+def _try_command(command, board, record=None):
 	"""
 	Attempts to parse and execute the specified command for the given board.
 	Raises an exception if either the command parsing fails, or if the move is
@@ -56,6 +64,9 @@ def _try_command(command, board):
 		'[peg_number] [up/down/left/right]'
 		'[old_i] [old_j] [up/down/left/right]'
 	"""
+	
+	from undo import UndoRecord
+	
 	tokens = command.split(' ')
 	n_tokens = len(tokens)
 	
@@ -64,6 +75,25 @@ def _try_command(command, board):
 		return
 	elif 'quit' in tokens:
 		_quit()
+	elif 'undo' in tokens and record != None:
+		if not record.undo():
+			print('Cannot undo.')
+		return
+	elif 'redo' in tokens and record != None:
+		if not record.redo():
+			print('Cannot redo.')
+		return
+	elif 'replay' in tokens and record != None:
+		record.replay()
+		return
+	elif 'cheat' in tokens and record != None:
+		#reset the board
+		while record.undo():
+			board.display()
+		_wait_for_input()
+		for win_command in WINNING_MOVES:
+			_try_command(win_command, board, record)
+		return
 	
 	parse_fail = Exception('Invalid command: "{}"'.format(command))
 	move_fail = Exception('Invalid Move: "{}"'.format(command))
@@ -117,44 +147,48 @@ def _try_command(command, board):
 	result = board.try_move(i_dest, j_dest, i_orig, j_orig, peg_number)
 	if not result:
 		raise move_fail
+	else:
+		if record != None:
+			record.commit()
 
+WINNING_MOVES = [
+	"1 3 to 3 3",
+	"8 to 2 3",
+	"0 2 down",
+	"3 left",
+	"16 up",
+	"3 down",
+	"27 up",
+	"20 right",
+	"7 d",
+	"23 l",
+	"7 r",
+	"25 l",
+	"32 u",
+	"30 r",
+	"17 d",
+	"30 u",
+	"6 d",
+	"13 l",
+	"26 u",
+	"8 r",
+	"26 l",
+	"25 l",
+	"25 u",
+	"25 r",
+	"25 r",
+	"25 d",
+	"25 l",
+	"5 r",
+	"28 u",
+	"27 r",
+	"5 l"
+]
 
 def __test():
 	board = EnglishBoard()
-	winning_commands = [
-		"1 3 to 3 3",
-		"8 to 2 3",
-		"0 2 down",
-		"3 left",
-		"16 up",
-		"3 down",
-		"27 up",
-		"20 right",
-		"7 d",
-		"23 l",
-		"7 r",
-		"25 l",
-		"32 u",
-		"30 r",
-		"17 d",
-		"30 u",
-		"6 d",
-		"13 l",
-		"26 u",
-		"8 r",
-		"26 l",
-		"25 l",
-		"25 u",
-		"25 r",
-		"25 r",
-		"25 d",
-		"25 l",
-		"5 r",
-		"28 u",
-		"27 r",
-		"5 l"
-	]
-	for command in winning_commands:
+	
+	for command in WINNING_MOVES:
 		_try_command(command, board)
 	assert board.score == 1, 'Winning moves failed to win.'
 	board.display()

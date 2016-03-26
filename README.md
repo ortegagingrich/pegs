@@ -15,7 +15,7 @@ Optional (to add a system-wide command 'pegs'):
 ```
 export SCRIPTS='/home/username/Scripts'
 ```
-then executing
+followed by execution of
 ```
 source ~/.bashrc
 ```

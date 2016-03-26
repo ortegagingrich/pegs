@@ -58,6 +58,37 @@ class EnglishBoard(object):
 		
 		return (-1, -1)
 	
+	def move_possible(self):
+		"""
+		Returns a boolean specifying whether or not there are any valid moves
+		left on the board
+		"""
+		_peg_array = self._peg_array #shortcut
+		for i in range(0, self.v_size):
+			for j in range(0, self.h_size):
+				if _peg_array[i, j] > 0:
+					try: #to protect from index out of bounds in checking
+						if _peg_array[i-1, j] > 0 and _peg_array[i-2, j] == 0:
+							return True
+					except:
+						pass
+					try:
+						if _peg_array[i+1, j] > 0 and _peg_array[i+2, j] == 0:
+							return True
+					except:
+						pass
+					try:
+						if _peg_array[i, j-1] > 0 and _peg_array[i, j-2] == 0:
+							return True
+					except:
+						pass
+					try:
+						if _peg_array[i, j+1] > 0 and _peg_array[i, j+2] == 0:
+							return True
+					except:
+						pass
+		return False
+	
 	def is_valid_move(self, i_dest, j_dest, i_orig=None, j_orig=None, peg_number=None):
 		"""
 		Checks to see if the specified move is valid.  A move is specified using

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ -z "$SCRIPTS" ] ; then
+	echo "Please set SCRIPTS environment variable"
+	exit 1
+fi
+
+
+{
+	python $SCRIPTS/pegs/main.py "$@"
+}||{
+	echo "Installation Broken."
+	echo "Please Reinstall Script: test-script."
+}
